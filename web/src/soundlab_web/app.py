@@ -28,6 +28,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Sound Lab", lifespan=lifespan)
     app.state.config = config
     app.state.templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+    app.state.templates.env.globals["tools"] = dashboard.TOOLS
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
     app.include_router(dashboard.router)
