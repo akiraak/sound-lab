@@ -25,3 +25,7 @@
   - 4波形（Sine/Square/Sawtooth/Triangle）
   - ポリフォニック対応、オクターブ切替
   - ビジュアルピアノ鍵盤 + PCキーボード操作
+- [x] エフェクト追加（Filter / Delay / Reverb）
+  - Filter: LP/HP/BP切替、Frequency、Q制御
+  - Delay: Time、Feedback、Dry/Wetミックス
+  - Reverb: JS生成インパルスレスポンス、Decay、Dry/Wetミックス

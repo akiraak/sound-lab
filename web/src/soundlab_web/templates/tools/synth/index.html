@@ -37,6 +37,65 @@
         </div>
     </div>
 
+    <!-- Effects -->
+    <div class="border-t pt-4">
+        <h2 class="text-sm font-semibold text-gray-700 mb-3">Effects</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Filter -->
+            <div class="space-y-2">
+                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Filter</label>
+                <div class="flex gap-1">
+                    <button data-filter="off"      class="filter-btn px-2 py-1 text-xs rounded border">Off</button>
+                    <button data-filter="lowpass"   class="filter-btn px-2 py-1 text-xs rounded border">LP</button>
+                    <button data-filter="highpass"  class="filter-btn px-2 py-1 text-xs rounded border">HP</button>
+                    <button data-filter="bandpass"  class="filter-btn px-2 py-1 text-xs rounded border">BP</button>
+                </div>
+                <div id="filter-params" class="space-y-1 hidden">
+                    <div>
+                        <label class="text-xs text-gray-500">Freq: <span id="filter-freq-display">8000</span>Hz</label>
+                        <input type="range" id="filter-freq" min="100" max="8000" value="8000" step="10" class="w-full h-1">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500">Q: <span id="filter-q-display">1.0</span></label>
+                        <input type="range" id="filter-q" min="0.1" max="20" value="1" step="0.1" class="w-full h-1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delay -->
+            <div class="space-y-2">
+                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Delay</label>
+                <div>
+                    <label class="text-xs text-gray-500">Time: <span id="delay-time-display">0.00</span>s</label>
+                    <input type="range" id="delay-time" min="0" max="1" value="0" step="0.01" class="w-full h-1">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Feedback: <span id="delay-feedback-display">0.00</span></label>
+                    <input type="range" id="delay-feedback" min="0" max="0.9" value="0" step="0.01" class="w-full h-1">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Mix: <span id="delay-mix-display">0</span>%</label>
+                    <input type="range" id="delay-mix" min="0" max="100" value="0" class="w-full h-1">
+                </div>
+            </div>
+
+            <!-- Reverb -->
+            <div class="space-y-2">
+                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Reverb</label>
+                <div>
+                    <label class="text-xs text-gray-500">Decay: <span id="reverb-decay-display">2.0</span>s</label>
+                    <input type="range" id="reverb-decay" min="0.5" max="5" value="2" step="0.1" class="w-full h-1">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Mix: <span id="reverb-mix-display">0</span>%</label>
+                    <input type="range" id="reverb-mix" min="0" max="100" value="0" class="w-full h-1">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <!-- Visual keyboard -->
     <div id="keyboard" class="relative select-none" style="height: 180px;"></div>
 
