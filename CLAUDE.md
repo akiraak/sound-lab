@@ -17,5 +17,8 @@
 ## プロジェクト一覧
 
 ### text2jingle
-- テキストプロンプトからAIを使ってジングル（短い音楽）を生成するツール
-- 技術選定中（調査ドキュメント: `text2jingle/docs/research.md`）
+- テキストプロンプトからAIを使ってジングル（短い音楽）を生成するCLIツール
+- Python 3.11+ / Replicate API / MusicGen
+- `cd text2jingle && source .venv/bin/activate && text2jingle "プロンプト"`
+- バックエンド差し替え可能（`backends/base.py` の MusicBackend ABC を継承）
+- 調査ドキュメント: `text2jingle/docs/research.md`
