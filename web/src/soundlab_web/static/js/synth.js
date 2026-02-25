@@ -2,27 +2,38 @@
 (function () {
   "use strict";
 
-  // Key mapping: code -> { note (semitone offset from C), type, label }
+  // PC keyboard → semitone offset mapping (1 octave)
   const KEY_MAP = {
-    // White keys (A-row)
-    KeyA: { note: 0, type: "white", label: "C" },
-    KeyS: { note: 2, type: "white", label: "D" },
-    KeyD: { note: 4, type: "white", label: "E" },
-    KeyF: { note: 5, type: "white", label: "F" },
-    KeyG: { note: 7, type: "white", label: "G" },
-    KeyH: { note: 9, type: "white", label: "A" },
-    KeyJ: { note: 11, type: "white", label: "B" },
-    KeyK: { note: 12, type: "white", label: "C'" },
-    // Black keys (W-row)
-    KeyW: { note: 1, type: "black", label: "C#" },
-    KeyE: { note: 3, type: "black", label: "D#" },
-    KeyT: { note: 6, type: "black", label: "F#" },
-    KeyY: { note: 8, type: "black", label: "G#" },
-    KeyU: { note: 10, type: "black", label: "A#" },
+    KeyA: { semi: 0 }, KeyS: { semi: 2 }, KeyD: { semi: 4 }, KeyF: { semi: 5 },
+    KeyG: { semi: 7 }, KeyH: { semi: 9 }, KeyJ: { semi: 11 }, KeyK: { semi: 12 },
+    KeyW: { semi: 1 }, KeyE: { semi: 3 },
+    KeyT: { semi: 6 }, KeyY: { semi: 8 }, KeyU: { semi: 10 },
   };
 
-  // Which white-key index each black key sits after
-  const BLACK_KEY_POSITION = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5 };
+  // PC key labels for visual keyboard
+  var PC_KEY_LABELS = {
+    0: "A", 2: "S", 4: "D", 5: "F", 7: "G", 9: "H", 11: "J", 12: "K",
+    1: "W", 3: "E", 6: "T", 8: "Y", 10: "U",
+  };
+
+  // Note definitions for one octave
+  var NOTES = [
+    { semi: 0,  type: "white", label: "C" },
+    { semi: 1,  type: "black", label: "C#" },
+    { semi: 2,  type: "white", label: "D" },
+    { semi: 3,  type: "black", label: "D#" },
+    { semi: 4,  type: "white", label: "E" },
+    { semi: 5,  type: "white", label: "F" },
+    { semi: 6,  type: "black", label: "F#" },
+    { semi: 7,  type: "white", label: "G" },
+    { semi: 8,  type: "black", label: "G#" },
+    { semi: 9,  type: "white", label: "A" },
+    { semi: 10, type: "black", label: "A#" },
+    { semi: 11, type: "white", label: "B" },
+  ];
+  var WHITE_SEMIS = [0, 2, 4, 5, 7, 9, 11];
+  var BLACK_AFTER_WHITE = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5 }; // black semi → white index it sits after
+  var NUM_DISPLAY_OCTAVES = 3;
 
   // State
   let audioCtx = null;
@@ -168,47 +179,70 @@
     return 440 * Math.pow(2, (midiNote - 69) / 12);
   }
 
-  function noteOn(code) {
-    if (activeVoices.has(code)) return;
-    const mapping = KEY_MAP[code];
-    if (!mapping) return;
+  // voiceKey: unique string for tracking active voices (e.g. "4-7" = octave4 semi7)
+  function voiceKey(oct, semi) { return oct + "-" + semi; }
 
+  function startVoice(key, oct, semi) {
+    if (activeVoices.has(key)) return;
     ensureAudioContext();
 
-    const freq = noteToFrequency(mapping.note, octave);
-    const osc = audioCtx.createOscillator();
+    var freq = noteToFrequency(semi, oct);
+    var osc = audioCtx.createOscillator();
     osc.type = waveform;
     osc.frequency.value = freq;
 
-    const voiceGain = audioCtx.createGain();
-    voiceGain.gain.setValueAtTime(0, audioCtx.currentTime);
-    voiceGain.gain.linearRampToValueAtTime(1.0, audioCtx.currentTime + 0.01);
+    var vGain = audioCtx.createGain();
+    vGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    vGain.gain.linearRampToValueAtTime(1.0, audioCtx.currentTime + 0.01);
 
-    osc.connect(voiceGain);
-    voiceGain.connect(masterGain);
+    osc.connect(vGain);
+    vGain.connect(masterGain);
     osc.start();
 
-    activeVoices.set(code, { oscillator: osc, gain: voiceGain });
-    highlightKey(code, true);
+    activeVoices.set(key, { oscillator: osc, gain: vGain, oct: oct, semi: semi });
+    highlightVisualKey(oct, semi, true);
   }
 
-  function noteOff(code) {
-    const voice = activeVoices.get(code);
+  function stopVoice(key) {
+    var voice = activeVoices.get(key);
     if (!voice) return;
 
-    const now = audioCtx.currentTime;
+    var now = audioCtx.currentTime;
     voice.gain.gain.cancelScheduledValues(now);
     voice.gain.gain.setValueAtTime(voice.gain.gain.value, now);
     voice.gain.gain.linearRampToValueAtTime(0, now + 0.08);
     voice.oscillator.stop(now + 0.1);
 
-    activeVoices.delete(code);
-    highlightKey(code, false);
+    highlightVisualKey(voice.oct, voice.semi, false);
+    activeVoices.delete(key);
+  }
+
+  // PC keyboard note on/off (uses KEY_MAP + current octave)
+  function noteOn(code) {
+    var mapping = KEY_MAP[code];
+    if (!mapping) return;
+    var oct = octave;
+    var semi = mapping.semi;
+    if (semi === 12) { oct += 1; semi = 0; } // C' → next octave C
+    startVoice("kb-" + code, oct, semi);
+  }
+
+  function noteOff(code) {
+    stopVoice("kb-" + code);
+  }
+
+  // Mouse/touch note on/off (uses absolute oct + semi)
+  function noteOnByNote(oct, semi) {
+    startVoice(voiceKey(oct, semi), oct, semi);
+  }
+
+  function noteOffByNote(oct, semi) {
+    stopVoice(voiceKey(oct, semi));
   }
 
   function allNotesOff() {
-    for (const code of [...activeVoices.keys()]) {
-      noteOff(code);
+    for (var key of [...activeVoices.keys()]) {
+      stopVoice(key);
     }
   }
 
@@ -243,96 +277,138 @@
   // --- UI ---
 
   function renderKeyboard() {
-    const container = document.getElementById("keyboard");
+    var container = document.getElementById("keyboard");
     container.innerHTML = "";
 
-    const whiteKeys = Object.entries(KEY_MAP)
-      .filter(([, v]) => v.type === "white")
-      .sort((a, b) => a[1].note - b[1].note);
+    var startOct = Math.max(1, octave - 1);
+    var endOct = Math.min(7, startOct + NUM_DISPLAY_OCTAVES - 1);
+    startOct = Math.max(1, endOct - NUM_DISPLAY_OCTAVES + 1);
 
-    const blackKeys = Object.entries(KEY_MAP)
-      .filter(([, v]) => v.type === "black")
-      .sort((a, b) => a[1].note - b[1].note);
+    // Count total white keys (7 per octave + final C)
+    var whiteCount = (endOct - startOct + 1) * 7 + 1;
+    var keyWidthPct = 100 / whiteCount;
 
-    const whiteCount = whiteKeys.length;
-    const keyWidthPct = 100 / whiteCount;
-
-    // White keys
-    const whiteRow = document.createElement("div");
+    // White keys row
+    var whiteRow = document.createElement("div");
     whiteRow.className = "flex h-full gap-[2px]";
 
-    whiteKeys.forEach(([code, info]) => {
-      const key = document.createElement("div");
+    var whiteIdx = 0;
+    for (var oct = startOct; oct <= endOct; oct++) {
+      for (var w = 0; w < WHITE_SEMIS.length; w++) {
+        var semi = WHITE_SEMIS[w];
+        (function (o, s, idx) {
+          var key = document.createElement("div");
+          var isCurrent = (o === octave);
+          key.className =
+            "white-key flex-1 border rounded-b-md " +
+            "flex flex-col items-center justify-end pb-2 cursor-pointer " +
+            "hover:bg-gray-50 transition-colors " +
+            (isCurrent ? "bg-blue-50 border-blue-200" : "bg-white border-gray-300");
+          key.dataset.oct = o;
+          key.dataset.semi = s;
+
+          var label = NOTES[s].label + o;
+          var pcLabel = (isCurrent && PC_KEY_LABELS[s]) ? PC_KEY_LABELS[s] : "";
+          key.innerHTML =
+            '<span class="text-[10px] text-gray-400">' + label + "</span>" +
+            (pcLabel ? '<span class="text-[9px] text-blue-400 font-medium mt-0.5">' + pcLabel + "</span>" : "");
+
+          key.addEventListener("pointerdown", function () { noteOnByNote(o, s); });
+          key.addEventListener("pointerup", function () { noteOffByNote(o, s); });
+          key.addEventListener("pointerleave", function () { noteOffByNote(o, s); });
+          whiteRow.appendChild(key);
+        })(oct, semi, whiteIdx);
+        whiteIdx++;
+      }
+    }
+    // Final C of next octave
+    (function () {
+      var finalOct = endOct + 1;
+      var key = document.createElement("div");
       key.className =
         "white-key flex-1 bg-white border border-gray-300 rounded-b-md " +
         "flex flex-col items-center justify-end pb-2 cursor-pointer " +
         "hover:bg-gray-50 transition-colors";
-      key.dataset.code = code;
-      key.innerHTML =
-        '<span class="text-xs text-gray-400">' + info.label + "</span>" +
-        '<span class="text-[10px] text-gray-300 mt-0.5">' + code.replace("Key", "") + "</span>";
-
-      key.addEventListener("pointerdown", () => noteOn(code));
-      key.addEventListener("pointerup", () => noteOff(code));
-      key.addEventListener("pointerleave", () => noteOff(code));
+      key.dataset.oct = finalOct;
+      key.dataset.semi = 0;
+      key.innerHTML = '<span class="text-[10px] text-gray-400">C' + finalOct + "</span>";
+      key.addEventListener("pointerdown", function () { noteOnByNote(finalOct, 0); });
+      key.addEventListener("pointerup", function () { noteOffByNote(finalOct, 0); });
+      key.addEventListener("pointerleave", function () { noteOffByNote(finalOct, 0); });
       whiteRow.appendChild(key);
-    });
+    })();
 
     container.appendChild(whiteRow);
 
     // Black keys (absolute overlay)
-    const blackRow = document.createElement("div");
+    var blackRow = document.createElement("div");
     blackRow.className = "absolute top-0 left-0 w-full pointer-events-none";
     blackRow.style.height = "110px";
 
-    blackKeys.forEach(([code, info]) => {
-      const whiteIdx = BLACK_KEY_POSITION[info.note];
-      if (whiteIdx === undefined) return;
+    var octOffset = 0;
+    for (var oct2 = startOct; oct2 <= endOct; oct2++) {
+      var blackSemis = [1, 3, 6, 8, 10];
+      for (var b = 0; b < blackSemis.length; b++) {
+        var bs = blackSemis[b];
+        (function (o, s, oOff) {
+          var whiteLocalIdx = BLACK_AFTER_WHITE[s];
+          var globalWhiteIdx = oOff * 7 + whiteLocalIdx;
+          var leftPct = ((globalWhiteIdx + 1) / whiteCount) * 100;
+          var bkWidth = keyWidthPct * 0.6;
+          var isCurrent = (o === octave);
 
-      const key = document.createElement("div");
-      const leftPct = ((whiteIdx + 1) / whiteCount) * 100;
-      const bkWidth = keyWidthPct * 0.6;
+          var key = document.createElement("div");
+          key.className =
+            "black-key absolute text-white rounded-b-md " +
+            "flex flex-col items-center justify-end pb-1 cursor-pointer " +
+            "hover:bg-gray-700 transition-colors pointer-events-auto " +
+            (isCurrent ? "bg-gray-700" : "bg-gray-800");
+          key.style.left = (leftPct - bkWidth / 2) + "%";
+          key.style.width = bkWidth + "%";
+          key.style.height = "100%";
+          key.dataset.oct = o;
+          key.dataset.semi = s;
 
-      key.className =
-        "black-key absolute bg-gray-800 text-white rounded-b-md " +
-        "flex flex-col items-center justify-end pb-1 cursor-pointer " +
-        "hover:bg-gray-700 transition-colors pointer-events-auto";
-      key.style.left = (leftPct - bkWidth / 2) + "%";
-      key.style.width = bkWidth + "%";
-      key.style.height = "100%";
-      key.dataset.code = code;
-      key.innerHTML =
-        '<span class="text-[10px] text-gray-400">' + info.label + "</span>" +
-        '<span class="text-[9px] text-gray-500 mt-0.5">' + code.replace("Key", "") + "</span>";
+          var pcLabel = (isCurrent && PC_KEY_LABELS[s]) ? PC_KEY_LABELS[s] : "";
+          key.innerHTML =
+            '<span class="text-[9px] text-gray-400">' + NOTES[s].label + "</span>" +
+            (pcLabel ? '<span class="text-[8px] text-blue-300 font-medium mt-0.5">' + pcLabel + "</span>" : "");
 
-      key.addEventListener("pointerdown", () => noteOn(code));
-      key.addEventListener("pointerup", () => noteOff(code));
-      key.addEventListener("pointerleave", () => noteOff(code));
-      blackRow.appendChild(key);
-    });
+          key.addEventListener("pointerdown", function () { noteOnByNote(o, s); });
+          key.addEventListener("pointerup", function () { noteOffByNote(o, s); });
+          key.addEventListener("pointerleave", function () { noteOffByNote(o, s); });
+          blackRow.appendChild(key);
+        })(oct2, bs, octOffset);
+      }
+      octOffset++;
+    }
 
     container.appendChild(blackRow);
   }
 
-  function highlightKey(code, active) {
-    const mapping = KEY_MAP[code];
-    if (!mapping) return;
-    const el = document.querySelector('[data-code="' + code + '"]');
+  function highlightVisualKey(oct, semi, active) {
+    var el = document.querySelector('[data-oct="' + oct + '"][data-semi="' + semi + '"]');
     if (!el) return;
+    var isBlack = el.classList.contains("black-key");
 
-    if (mapping.type === "white") {
-      el.classList.toggle("bg-blue-100", active);
-      el.classList.toggle("border-blue-400", active);
-    } else {
+    if (isBlack) {
       el.classList.toggle("bg-blue-600", active);
-      el.classList.toggle("bg-gray-800", !active);
+      if (!active) {
+        var isCurrent = (oct === octave);
+        el.classList.toggle("bg-gray-700", isCurrent);
+        el.classList.toggle("bg-gray-800", !isCurrent);
+      }
+    } else {
+      el.classList.toggle("bg-blue-200", active);
+      el.classList.toggle("border-blue-400", active);
     }
   }
 
   function setOctave(newOctave) {
-    octave = Math.max(1, Math.min(7, newOctave));
+    octave = Math.max(2, Math.min(6, newOctave));
     document.getElementById("octave-display").textContent = octave;
     allNotesOff();
+    renderKeyboard();
   }
 
   // --- Init ---
