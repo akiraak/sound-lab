@@ -11,6 +11,12 @@ TOOLS = [
         route="/tools/jingle/",
         icon="🎵",
     ),
+    ToolInfo(
+        name="Web Synth",
+        description="PCキーボードで演奏できるブラウザシンセサイザー",
+        route="/tools/synth/",
+        icon="🎹",
+    ),
 ]
 
 

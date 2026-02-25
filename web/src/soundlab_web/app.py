@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from soundlab_web.config import WebConfig, load_web_config
-from soundlab_web.routers import dashboard, jingle
+from soundlab_web.routers import dashboard, jingle, synth
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -32,6 +32,7 @@ def create_app() -> FastAPI:
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
     app.include_router(dashboard.router)
     app.include_router(jingle.router, prefix="/tools/jingle")
+    app.include_router(synth.router, prefix="/tools/synth")
 
     return app
 
