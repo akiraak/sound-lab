@@ -10,33 +10,35 @@
     <div class="flex flex-wrap items-center gap-6">
         <!-- Waveform selector -->
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1" title="音の波形を選択します">Waveform</label>
+            <label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
+                Waveform
+                <span class="info-tip">i<span class="info-tip-text">音色のベースとなる波形を選択。Sine=柔らかい、Square=ファミコン風、Sawtooth=明るく力強い、Triangle=素朴で丸い音</span></span>
+            </label>
             <div id="waveform-selector" class="flex gap-2">
-                <button data-wave="sine"     class="wave-btn px-3 py-1 text-sm rounded border" title="正弦波 - なめらかで柔らかい音">Sine</button>
-                <button data-wave="square"   class="wave-btn px-3 py-1 text-sm rounded border" title="矩形波 - ファミコンのような音">Square</button>
-                <button data-wave="sawtooth" class="wave-btn px-3 py-1 text-sm rounded border" title="ノコギリ波 - 明るく力強い音">Sawtooth</button>
-                <button data-wave="triangle" class="wave-btn px-3 py-1 text-sm rounded border" title="三角波 - 丸みのある素朴な音">Triangle</button>
+                <button data-wave="sine"     class="wave-btn px-3 py-1 text-sm rounded border">Sine</button>
+                <button data-wave="square"   class="wave-btn px-3 py-1 text-sm rounded border">Square</button>
+                <button data-wave="sawtooth" class="wave-btn px-3 py-1 text-sm rounded border">Sawtooth</button>
+                <button data-wave="triangle" class="wave-btn px-3 py-1 text-sm rounded border">Triangle</button>
             </div>
-            <p class="text-[10px] text-gray-400 mt-1">音色のベースとなる波形を選択</p>
         </div>
         <!-- Volume slider -->
         <div>
-            <label for="volume" class="block text-sm font-medium text-gray-700 mb-1" title="全体の音量を調整します">
+            <label for="volume" class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
                 Volume: <span id="volume-display">50</span>%
+                <span class="info-tip">i<span class="info-tip-text">全体の音量（マスターボリューム）を調整します</span></span>
             </label>
-            <input type="range" id="volume" min="0" max="100" value="50" class="w-40" title="マスターボリューム">
-            <p class="text-[10px] text-gray-400 mt-1">マスターボリューム</p>
+            <input type="range" id="volume" min="0" max="100" value="50" class="w-40">
         </div>
         <!-- Octave control -->
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1" title="鍵盤の音域を変更します（1〜7）">
+            <label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
                 Octave: <span id="octave-display">4</span>
+                <span class="info-tip">i<span class="info-tip-text">鍵盤の音域を変更（範囲: 1〜7）。キーボードの Z/X キーでも操作できます</span></span>
             </label>
             <div class="flex gap-2">
-                <button id="octave-down" class="px-3 py-1 text-sm rounded border hover:bg-gray-100" title="オクターブを下げる (Z)">-</button>
-                <button id="octave-up"   class="px-3 py-1 text-sm rounded border hover:bg-gray-100" title="オクターブを上げる (X)">+</button>
+                <button id="octave-down" class="px-3 py-1 text-sm rounded border hover:bg-gray-100">-</button>
+                <button id="octave-up"   class="px-3 py-1 text-sm rounded border hover:bg-gray-100">+</button>
             </div>
-            <p class="text-[10px] text-gray-400 mt-1">Z/Xキーでも変更可（範囲: 1〜7）</p>
         </div>
     </div>
 
@@ -47,55 +49,82 @@
 
             <!-- Filter -->
             <div class="space-y-2">
-                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider" title="特定の周波数帯域を強調・カットするフィルター">Filter</label>
-                <p class="text-[10px] text-gray-400">特定の周波数帯域をカットして音色を変化</p>
+                <label class="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Filter
+                    <span class="info-tip">i<span class="info-tip-text">特定の周波数帯域をカットして音色を変化させるフィルター。LP=高音カット、HP=低音カット、BP=指定周波数付近のみ通す</span></span>
+                </label>
                 <div class="flex gap-1">
-                    <button data-filter="off"      class="filter-btn px-2 py-1 text-xs rounded border" title="フィルターなし">Off</button>
-                    <button data-filter="lowpass"   class="filter-btn px-2 py-1 text-xs rounded border" title="ローパス - 高音をカット。こもった音に">LP</button>
-                    <button data-filter="highpass"  class="filter-btn px-2 py-1 text-xs rounded border" title="ハイパス - 低音をカット。薄い音に">HP</button>
-                    <button data-filter="bandpass"  class="filter-btn px-2 py-1 text-xs rounded border" title="バンドパス - 指定周波数付近のみ通す">BP</button>
+                    <button data-filter="off"      class="filter-btn px-2 py-1 text-xs rounded border">Off</button>
+                    <button data-filter="lowpass"   class="filter-btn px-2 py-1 text-xs rounded border">LP</button>
+                    <button data-filter="highpass"  class="filter-btn px-2 py-1 text-xs rounded border">HP</button>
+                    <button data-filter="bandpass"  class="filter-btn px-2 py-1 text-xs rounded border">BP</button>
                 </div>
                 <div id="filter-params" class="space-y-1 hidden">
                     <div>
-                        <label class="text-xs text-gray-500" title="カットオフ周波数 - この周波数を境にフィルターが効く">Freq: <span id="filter-freq-display">8000</span>Hz</label>
-                        <input type="range" id="filter-freq" min="100" max="8000" value="8000" step="10" class="w-full h-1" title="カットオフ周波数（100〜8000Hz）">
+                        <label class="flex items-center gap-1 text-xs text-gray-500">
+                            Freq: <span id="filter-freq-display">8000</span>Hz
+                            <span class="info-tip">i<span class="info-tip-text">カットオフ周波数（100〜8000Hz）。この周波数を境にフィルターが効きます</span></span>
+                        </label>
+                        <input type="range" id="filter-freq" min="100" max="8000" value="8000" step="10" class="w-full h-1">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-500" title="レゾナンス - カットオフ付近の音を強調する度合い">Q: <span id="filter-q-display">1.0</span></label>
-                        <input type="range" id="filter-q" min="0.1" max="20" value="1" step="0.1" class="w-full h-1" title="レゾナンス（0.1〜20）高いほどクセが強い">
+                        <label class="flex items-center gap-1 text-xs text-gray-500">
+                            Q: <span id="filter-q-display">1.0</span>
+                            <span class="info-tip">i<span class="info-tip-text">レゾナンス（0.1〜20）。カットオフ付近の音を強調する度合い。高いほどクセが強くなります</span></span>
+                        </label>
+                        <input type="range" id="filter-q" min="0.1" max="20" value="1" step="0.1" class="w-full h-1">
                     </div>
                 </div>
             </div>
 
             <!-- Delay -->
             <div class="space-y-2">
-                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider" title="音を遅らせて繰り返すエコー効果">Delay</label>
-                <p class="text-[10px] text-gray-400">やまびこのように音を繰り返すエコー効果</p>
+                <label class="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Delay
+                    <span class="info-tip">i<span class="info-tip-text">やまびこのように音を遅らせて繰り返すエコー効果。Time/Feedbackで繰り返しの間隔と回数、Mixで効果の強さを調整</span></span>
+                </label>
                 <div>
-                    <label class="text-xs text-gray-500" title="繰り返しの間隔（秒）">Time: <span id="delay-time-display">0.00</span>s</label>
-                    <input type="range" id="delay-time" min="0" max="1" value="0" step="0.01" class="w-full h-1" title="ディレイタイム（0〜1秒）">
+                    <label class="flex items-center gap-1 text-xs text-gray-500">
+                        Time: <span id="delay-time-display">0.00</span>s
+                        <span class="info-tip">i<span class="info-tip-text">繰り返しの間隔（0〜1秒）</span></span>
+                    </label>
+                    <input type="range" id="delay-time" min="0" max="1" value="0" step="0.01" class="w-full h-1">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-500" title="繰り返しの減衰量。高いほど長く繰り返す">Feedback: <span id="delay-feedback-display">0.00</span></label>
-                    <input type="range" id="delay-feedback" min="0" max="0.9" value="0" step="0.01" class="w-full h-1" title="フィードバック量（0〜0.9）">
+                    <label class="flex items-center gap-1 text-xs text-gray-500">
+                        Feedback: <span id="delay-feedback-display">0.00</span>
+                        <span class="info-tip">i<span class="info-tip-text">繰り返しの減衰量（0〜0.9）。高いほど長く繰り返します</span></span>
+                    </label>
+                    <input type="range" id="delay-feedback" min="0" max="0.9" value="0" step="0.01" class="w-full h-1">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-500" title="原音とディレイ音のバランス">Mix: <span id="delay-mix-display">0</span>%</label>
-                    <input type="range" id="delay-mix" min="0" max="100" value="0" class="w-full h-1" title="Dry/Wetミックス（0%=原音のみ）">
+                    <label class="flex items-center gap-1 text-xs text-gray-500">
+                        Mix: <span id="delay-mix-display">0</span>%
+                        <span class="info-tip">i<span class="info-tip-text">原音とディレイ音のバランス。0%=原音のみ、100%=エコーのみ</span></span>
+                    </label>
+                    <input type="range" id="delay-mix" min="0" max="100" value="0" class="w-full h-1">
                 </div>
             </div>
 
             <!-- Reverb -->
             <div class="space-y-2">
-                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider" title="部屋の残響をシミュレートするリバーブ">Reverb</label>
-                <p class="text-[10px] text-gray-400">空間の残響を加えて広がりのある音に</p>
+                <label class="flex items-center gap-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reverb
+                    <span class="info-tip">i<span class="info-tip-text">空間の残響をシミュレート。部屋やホールで鳴っているような広がりのある音になります</span></span>
+                </label>
                 <div>
-                    <label class="text-xs text-gray-500" title="残響の長さ。長いほど広い空間のような響き">Decay: <span id="reverb-decay-display">2.0</span>s</label>
-                    <input type="range" id="reverb-decay" min="0.5" max="5" value="2" step="0.1" class="w-full h-1" title="残響時間（0.5〜5秒）">
+                    <label class="flex items-center gap-1 text-xs text-gray-500">
+                        Decay: <span id="reverb-decay-display">2.0</span>s
+                        <span class="info-tip">i<span class="info-tip-text">残響の長さ（0.5〜5秒）。長いほど広い空間のような響きになります</span></span>
+                    </label>
+                    <input type="range" id="reverb-decay" min="0.5" max="5" value="2" step="0.1" class="w-full h-1">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-500" title="原音とリバーブ音のバランス">Mix: <span id="reverb-mix-display">0</span>%</label>
-                    <input type="range" id="reverb-mix" min="0" max="100" value="0" class="w-full h-1" title="Dry/Wetミックス（0%=原音のみ）">
+                    <label class="flex items-center gap-1 text-xs text-gray-500">
+                        Mix: <span id="reverb-mix-display">0</span>%
+                        <span class="info-tip">i<span class="info-tip-text">原音とリバーブ音のバランス。0%=原音のみ、100%=残響のみ</span></span>
+                    </label>
+                    <input type="range" id="reverb-mix" min="0" max="100" value="0" class="w-full h-1">
                 </div>
             </div>
 
