@@ -441,12 +441,21 @@
     }
   }
 
+  function updateOctaveButtons() {
+    document.querySelectorAll(".oct-btn").forEach(function (btn) {
+      var isActive = parseInt(btn.dataset.oct) === octave;
+      btn.classList.toggle("bg-blue-600", isActive);
+      btn.classList.toggle("text-white", isActive);
+      btn.classList.toggle("bg-white", !isActive);
+    });
+  }
+
   function setOctave(newOctave) {
     var clamped = Math.max(START_OCT, Math.min(END_OCT, newOctave));
     if (clamped === octave) return;
     allNotesOff();
     octave = clamped;
-    document.getElementById("octave-display").textContent = octave;
+    updateOctaveButtons();
     updateFocusHighlight();
   }
 
@@ -455,6 +464,7 @@
   function init() {
     renderKeyboard();
     updateFocusHighlight();
+    updateOctaveButtons();
 
     // Waveform buttons
     document.querySelectorAll(".wave-btn").forEach(function (btn) {
@@ -486,11 +496,10 @@
     });
 
     // Octave buttons
-    document.getElementById("octave-down").addEventListener("click", function () {
-      setOctave(octave - 1);
-    });
-    document.getElementById("octave-up").addEventListener("click", function () {
-      setOctave(octave + 1);
+    document.querySelectorAll(".oct-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        setOctave(parseInt(btn.dataset.oct));
+      });
     });
 
     // --- Filter controls ---

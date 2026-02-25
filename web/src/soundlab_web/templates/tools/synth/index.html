@@ -32,12 +32,13 @@
         <!-- Octave control -->
         <div>
             <label class="flex items-center gap-1 text-sm font-medium text-gray-700 mb-1">
-                Octave: <span id="octave-display">4</span>
-                <span class="info-tip">i<span class="info-tip-text">PCキーボードが操作するオクターブを切替。左右矢印キー（←/→）でも操作できます</span></span>
+                Octave
+                <span class="info-tip">i<span class="info-tip-text">PCキーボードが操作するオクターブを選択。左右矢印キー（←/→）でも切替できます</span></span>
             </label>
-            <div class="flex gap-2">
-                <button id="octave-down" class="px-3 py-1 text-sm rounded border hover:bg-gray-100">-</button>
-                <button id="octave-up"   class="px-3 py-1 text-sm rounded border hover:bg-gray-100">+</button>
+            <div id="octave-buttons" class="flex gap-1">
+                <button data-oct="3" class="oct-btn px-3 py-1 text-sm rounded border">3</button>
+                <button data-oct="4" class="oct-btn px-3 py-1 text-sm rounded border">4</button>
+                <button data-oct="5" class="oct-btn px-3 py-1 text-sm rounded border">5</button>
             </div>
         </div>
     </div>
