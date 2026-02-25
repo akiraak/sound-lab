@@ -29,3 +29,4 @@
   - Filter: LP/HP/BP切替、Frequency、Q制御
   - Delay: Time、Feedback、Dry/Wetミックス
   - Reverb: JS生成インパルスレスポンス、Decay、Dry/Wetミックス
+- [x] 各機能にヘルプ（ツールチップ/説明テキスト）を追加
