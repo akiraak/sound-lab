@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Settings - Sound Lab{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Settings</h1>
+
+{% if saved %}
+<div class="mb-4 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+    設定を保存しました。
+</div>
+{% endif %}
+
+<form method="post" action="/settings/" class="bg-white rounded-lg shadow-sm border divide-y">
+    {% for item in setting_keys %}
+    <div class="p-5">
+        <label for="{{ item.key }}" class="block text-sm font-medium text-gray-700 mb-1">
+            {{ item.label }}
+        </label>
+        <p class="text-xs text-gray-400 mb-2">{{ item.help }}</p>
+
+        {% if item.type == "password" %}
+        <input type="password" name="{{ item.key }}" id="{{ item.key }}"
+               placeholder="{% if current[item.key] %}(設定済み){% else %}{{ item.placeholder }}{% endif %}"
+               class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+               autocomplete="off">
+        {% elif item.type == "select" %}
+        <select name="{{ item.key }}" id="{{ item.key }}"
+                class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            {% for opt in item.options %}
+            <option value="{{ opt }}" {% if current[item.key] == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
+        </select>
+        {% elif item.type == "number" %}
+        <input type="number" name="{{ item.key }}" id="{{ item.key }}"
+               value="{{ current[item.key] }}"
+               placeholder="{{ item.placeholder }}"
+               min="1" max="30"
+               class="w-32 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        {% else %}
+        <input type="text" name="{{ item.key }}" id="{{ item.key }}"
+               value="{{ current[item.key] }}"
+               placeholder="{{ item.placeholder }}"
+               class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="p-5 bg-gray-50">
+        <button type="submit"
+                class="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
+            保存
+        </button>
+    </div>
+</form>
+{% endblock %}

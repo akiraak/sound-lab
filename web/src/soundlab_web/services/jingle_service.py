@@ -4,20 +4,36 @@ from datetime import datetime
 from pathlib import Path
 
 from text2jingle.backends import get_backend
-from text2jingle.config import load_config
+from text2jingle.config import Config, load_config
 from text2jingle.models import GenerateRequest
 from text2jingle.output import save_audio
 
 from soundlab_web.models import JingleJob, JobStatus
+from soundlab_web.services.settings_service import SettingsService
+
+
+def _build_config(settings: SettingsService) -> Config:
+    """SettingsServiceからtext2jingle Configを構築する"""
+    token = settings.get("REPLICATE_API_TOKEN", "")
+    if not token:
+        # DB に無ければ従来の load_config() にフォールバック
+        return load_config()
+    return Config(
+        replicate_api_token=token,
+        default_backend=settings.get("TEXT2JINGLE_BACKEND", "replicate-musicgen"),
+        default_duration=int(settings.get("TEXT2JINGLE_DURATION", "8")),
+        default_output_format=settings.get("TEXT2JINGLE_FORMAT", "wav"),
+    )
 
 
 class JingleService:
-    def __init__(self, output_dir: Path, data_dir: Path):
+    def __init__(self, output_dir: Path, data_dir: Path, settings: SettingsService | None = None):
         self.output_dir = output_dir
         self._data_dir = data_dir
         self._history_file = data_dir / "history.json"
         self._jobs: dict[str, JingleJob] = {}
-        self._config = load_config()
+        self._settings = settings
+        self._config = _build_config(settings) if settings else load_config()
         self._backend = get_backend(self._config)
 
     def create_job(

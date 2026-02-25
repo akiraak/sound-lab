@@ -15,7 +15,12 @@ def _get_service(request: Request) -> JingleService:
     global _service
     if _service is None:
         config = request.app.state.config
-        _service = JingleService(output_dir=config.output_dir, data_dir=config.data_dir)
+        settings = request.app.state.settings
+        _service = JingleService(
+            output_dir=config.output_dir,
+            data_dir=config.data_dir,
+            settings=settings,
+        )
     return _service
 
 
