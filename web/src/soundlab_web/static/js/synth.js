@@ -33,13 +33,14 @@
   ];
   var WHITE_SEMIS = [0, 2, 4, 5, 7, 9, 11];
   var BLACK_AFTER_WHITE = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5 }; // black semi → white index it sits after
-  var NUM_DISPLAY_OCTAVES = 3;
+  var START_OCT = 3; // 固定表示: オクターブ 3, 4, 5
+  var END_OCT = 5;
 
   // State
   let audioCtx = null;
   let masterGain = null;
   let waveform = "sine";
-  let octave = 4;
+  let octave = 4; // PCキーボードが操作するオクターブ（START_OCT〜END_OCT）
   let volume = 0.5;
   const activeVoices = new Map();
 
@@ -252,11 +253,13 @@
     if (e.repeat) return;
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
 
-    if (e.code === "KeyZ") {
+    if (e.code === "ArrowLeft") {
+      e.preventDefault();
       setOctave(octave - 1);
       return;
     }
-    if (e.code === "KeyX") {
+    if (e.code === "ArrowRight") {
+      e.preventDefault();
       setOctave(octave + 1);
       return;
     }
@@ -280,50 +283,38 @@
     var container = document.getElementById("keyboard");
     container.innerHTML = "";
 
-    var startOct = Math.max(1, octave - 1);
-    var endOct = Math.min(7, startOct + NUM_DISPLAY_OCTAVES - 1);
-    startOct = Math.max(1, endOct - NUM_DISPLAY_OCTAVES + 1);
-
     // Count total white keys (7 per octave + final C)
-    var whiteCount = (endOct - startOct + 1) * 7 + 1;
+    var whiteCount = (END_OCT - START_OCT + 1) * 7 + 1;
     var keyWidthPct = 100 / whiteCount;
 
     // White keys row
     var whiteRow = document.createElement("div");
     whiteRow.className = "flex h-full gap-[2px]";
 
-    var whiteIdx = 0;
-    for (var oct = startOct; oct <= endOct; oct++) {
+    for (var oct = START_OCT; oct <= END_OCT; oct++) {
       for (var w = 0; w < WHITE_SEMIS.length; w++) {
         var semi = WHITE_SEMIS[w];
-        (function (o, s, idx) {
+        (function (o, s) {
           var key = document.createElement("div");
-          var isCurrent = (o === octave);
           key.className =
             "white-key flex-1 border rounded-b-md " +
             "flex flex-col items-center justify-end pb-2 cursor-pointer " +
-            "hover:bg-gray-50 transition-colors " +
-            (isCurrent ? "bg-blue-50 border-blue-200" : "bg-white border-gray-300");
+            "hover:bg-gray-50 transition-colors bg-white border-gray-300";
           key.dataset.oct = o;
           key.dataset.semi = s;
-
-          var label = NOTES[s].label + o;
-          var pcLabel = (isCurrent && PC_KEY_LABELS[s]) ? PC_KEY_LABELS[s] : "";
-          key.innerHTML =
-            '<span class="text-[10px] text-gray-400">' + label + "</span>" +
-            (pcLabel ? '<span class="text-[9px] text-blue-400 font-medium mt-0.5">' + pcLabel + "</span>" : "");
+          key.innerHTML = '<span class="note-label text-[10px] text-gray-400">' + NOTES[s].label + o + '</span>' +
+            '<span class="pc-label text-[9px] text-blue-400 font-medium mt-0.5 hidden"></span>';
 
           key.addEventListener("pointerdown", function () { noteOnByNote(o, s); });
           key.addEventListener("pointerup", function () { noteOffByNote(o, s); });
           key.addEventListener("pointerleave", function () { noteOffByNote(o, s); });
           whiteRow.appendChild(key);
-        })(oct, semi, whiteIdx);
-        whiteIdx++;
+        })(oct, semi);
       }
     }
     // Final C of next octave
     (function () {
-      var finalOct = endOct + 1;
+      var finalOct = END_OCT + 1;
       var key = document.createElement("div");
       key.className =
         "white-key flex-1 bg-white border border-gray-300 rounded-b-md " +
@@ -331,7 +322,8 @@
         "hover:bg-gray-50 transition-colors";
       key.dataset.oct = finalOct;
       key.dataset.semi = 0;
-      key.innerHTML = '<span class="text-[10px] text-gray-400">C' + finalOct + "</span>";
+      key.innerHTML = '<span class="note-label text-[10px] text-gray-400">C' + finalOct + '</span>' +
+        '<span class="pc-label text-[9px] text-blue-400 font-medium mt-0.5 hidden"></span>';
       key.addEventListener("pointerdown", function () { noteOnByNote(finalOct, 0); });
       key.addEventListener("pointerup", function () { noteOffByNote(finalOct, 0); });
       key.addEventListener("pointerleave", function () { noteOffByNote(finalOct, 0); });
@@ -346,44 +338,81 @@
     blackRow.style.height = "110px";
 
     var octOffset = 0;
-    for (var oct2 = startOct; oct2 <= endOct; oct2++) {
+    for (var oct2 = START_OCT; oct2 <= END_OCT; oct2++) {
       var blackSemis = [1, 3, 6, 8, 10];
       for (var b = 0; b < blackSemis.length; b++) {
-        var bs = blackSemis[b];
         (function (o, s, oOff) {
           var whiteLocalIdx = BLACK_AFTER_WHITE[s];
           var globalWhiteIdx = oOff * 7 + whiteLocalIdx;
           var leftPct = ((globalWhiteIdx + 1) / whiteCount) * 100;
           var bkWidth = keyWidthPct * 0.6;
-          var isCurrent = (o === octave);
 
           var key = document.createElement("div");
           key.className =
             "black-key absolute text-white rounded-b-md " +
             "flex flex-col items-center justify-end pb-1 cursor-pointer " +
-            "hover:bg-gray-700 transition-colors pointer-events-auto " +
-            (isCurrent ? "bg-gray-700" : "bg-gray-800");
+            "hover:bg-gray-700 transition-colors pointer-events-auto bg-gray-800";
           key.style.left = (leftPct - bkWidth / 2) + "%";
           key.style.width = bkWidth + "%";
           key.style.height = "100%";
           key.dataset.oct = o;
           key.dataset.semi = s;
-
-          var pcLabel = (isCurrent && PC_KEY_LABELS[s]) ? PC_KEY_LABELS[s] : "";
-          key.innerHTML =
-            '<span class="text-[9px] text-gray-400">' + NOTES[s].label + "</span>" +
-            (pcLabel ? '<span class="text-[8px] text-blue-300 font-medium mt-0.5">' + pcLabel + "</span>" : "");
+          key.innerHTML = '<span class="note-label text-[9px] text-gray-400">' + NOTES[s].label + '</span>' +
+            '<span class="pc-label text-[8px] text-blue-300 font-medium mt-0.5 hidden"></span>';
 
           key.addEventListener("pointerdown", function () { noteOnByNote(o, s); });
           key.addEventListener("pointerup", function () { noteOffByNote(o, s); });
           key.addEventListener("pointerleave", function () { noteOffByNote(o, s); });
           blackRow.appendChild(key);
-        })(oct2, bs, octOffset);
+        })(oct2, blackSemis[b], octOffset);
       }
       octOffset++;
     }
 
     container.appendChild(blackRow);
+  }
+
+  function updateFocusHighlight() {
+    // Reset all keys to default style
+    document.querySelectorAll("#keyboard .white-key").forEach(function (el) {
+      el.classList.remove("bg-blue-50", "border-blue-200");
+      el.classList.add("bg-white", "border-gray-300");
+      var pcLabel = el.querySelector(".pc-label");
+      if (pcLabel) { pcLabel.textContent = ""; pcLabel.classList.add("hidden"); }
+    });
+    document.querySelectorAll("#keyboard .black-key").forEach(function (el) {
+      el.classList.remove("bg-gray-700");
+      el.classList.add("bg-gray-800");
+      var pcLabel = el.querySelector(".pc-label");
+      if (pcLabel) { pcLabel.textContent = ""; pcLabel.classList.add("hidden"); }
+    });
+
+    // Highlight current octave
+    document.querySelectorAll('#keyboard [data-oct="' + octave + '"]').forEach(function (el) {
+      var semi = parseInt(el.dataset.semi);
+      var isBlack = el.classList.contains("black-key");
+      if (isBlack) {
+        el.classList.remove("bg-gray-800");
+        el.classList.add("bg-gray-700");
+      } else {
+        el.classList.remove("bg-white", "border-gray-300");
+        el.classList.add("bg-blue-50", "border-blue-200");
+      }
+      // Show PC key label
+      var label = PC_KEY_LABELS[semi];
+      if (label) {
+        var pcLabel = el.querySelector(".pc-label");
+        if (pcLabel) { pcLabel.textContent = label; pcLabel.classList.remove("hidden"); }
+      }
+    });
+    // Also highlight C of next octave if it's the K key (semi=12 → oct+1, semi=0)
+    var nextC = document.querySelector('#keyboard [data-oct="' + (octave + 1) + '"][data-semi="0"]');
+    if (nextC && !nextC.classList.contains("black-key")) {
+      nextC.classList.remove("bg-white", "border-gray-300");
+      nextC.classList.add("bg-blue-50", "border-blue-200");
+      var pcLabel = nextC.querySelector(".pc-label");
+      if (pcLabel) { pcLabel.textContent = "K"; pcLabel.classList.remove("hidden"); }
+    }
   }
 
   function highlightVisualKey(oct, semi, active) {
@@ -392,29 +421,40 @@
     var isBlack = el.classList.contains("black-key");
 
     if (isBlack) {
-      el.classList.toggle("bg-blue-600", active);
-      if (!active) {
-        var isCurrent = (oct === octave);
-        el.classList.toggle("bg-gray-700", isCurrent);
-        el.classList.toggle("bg-gray-800", !isCurrent);
+      if (active) {
+        el.classList.remove("bg-gray-800", "bg-gray-700");
+        el.classList.add("bg-blue-600");
+      } else {
+        el.classList.remove("bg-blue-600");
+        el.classList.add(oct === octave ? "bg-gray-700" : "bg-gray-800");
       }
     } else {
-      el.classList.toggle("bg-blue-200", active);
-      el.classList.toggle("border-blue-400", active);
+      if (active) {
+        el.classList.remove("bg-white", "bg-blue-50");
+        el.classList.add("bg-blue-200", "border-blue-400");
+      } else {
+        el.classList.remove("bg-blue-200", "border-blue-400");
+        var isFocused = (oct === octave) || (oct === octave + 1 && semi === 0);
+        el.classList.add(isFocused ? "bg-blue-50" : "bg-white");
+        el.classList.add(isFocused ? "border-blue-200" : "border-gray-300");
+      }
     }
   }
 
   function setOctave(newOctave) {
-    octave = Math.max(2, Math.min(6, newOctave));
-    document.getElementById("octave-display").textContent = octave;
+    var clamped = Math.max(START_OCT, Math.min(END_OCT, newOctave));
+    if (clamped === octave) return;
     allNotesOff();
-    renderKeyboard();
+    octave = clamped;
+    document.getElementById("octave-display").textContent = octave;
+    updateFocusHighlight();
   }
 
   // --- Init ---
 
   function init() {
     renderKeyboard();
+    updateFocusHighlight();
 
     // Waveform buttons
     document.querySelectorAll(".wave-btn").forEach(function (btn) {
