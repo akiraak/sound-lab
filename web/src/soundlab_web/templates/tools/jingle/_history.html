@@ -1,0 +1,32 @@
+{% if jobs %}
+<div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600">
+            <tr>
+                <th class="text-left px-4 py-2">Prompt</th>
+                <th class="text-left px-4 py-2 w-16">Sec</th>
+                <th class="text-left px-4 py-2 w-24">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y">
+            {% for job in jobs %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 truncate max-w-[200px]" title="{{ job.prompt }}">{{ job.prompt }}</td>
+                <td class="px-4 py-2">{{ job.duration }}s</td>
+                <td class="px-4 py-2 space-x-2">
+                    {% if job.filename %}
+                    <button onclick="document.getElementById('history-audio-{{ loop.index }}').play()"
+                            class="text-blue-600 hover:text-blue-800 text-xs">Play</button>
+                    <a href="/tools/jingle/download/{{ job.filename }}"
+                       class="text-green-600 hover:text-green-800 text-xs">DL</a>
+                    <audio id="history-audio-{{ loop.index }}" src="/tools/jingle/audio/{{ job.filename }}" preload="none"></audio>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-gray-400 text-sm">No history yet</p>
+{% endif %}

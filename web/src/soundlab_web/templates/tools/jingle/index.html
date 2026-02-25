@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Jingle Generator - Sound Lab{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Jingle Generator</h1>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div>
+        {% include "tools/jingle/_form.html" %}
+    </div>
+    <div class="space-y-6">
+        <div id="result-area"></div>
+        <div>
+            <h2 class="text-lg font-semibold text-gray-700 mb-3">History</h2>
+            <div id="history-area"
+                 hx-get="/tools/jingle/history"
+                 hx-trigger="load, historyUpdated from:body">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

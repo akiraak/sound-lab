@@ -1,0 +1,57 @@
+<form hx-post="/tools/jingle/generate"
+      hx-target="#result-area"
+      hx-swap="innerHTML"
+      class="bg-white rounded-lg shadow-sm border p-6 space-y-4">
+
+    <div>
+        <label for="prompt" class="block text-sm font-medium text-gray-700 mb-1">Prompt</label>
+        <textarea id="prompt" name="prompt" rows="3" required
+                  placeholder="Upbeat acoustic guitar jingle, cheerful and bright"
+                  class="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">Duration (sec)</label>
+            <input type="number" id="duration" name="duration" value="8" min="1" max="30"
+                   class="w-full border rounded-md px-3 py-2 text-sm">
+        </div>
+        <div>
+            <label for="output_format" class="block text-sm font-medium text-gray-700 mb-1">Format</label>
+            <select id="output_format" name="output_format"
+                    class="w-full border rounded-md px-3 py-2 text-sm">
+                <option value="wav">WAV</option>
+                <option value="mp3">MP3</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label for="model_version" class="block text-sm font-medium text-gray-700 mb-1">Model</label>
+            <select id="model_version" name="model_version"
+                    class="w-full border rounded-md px-3 py-2 text-sm">
+                <option value="stereo-melody-large">stereo-melody-large</option>
+                <option value="stereo-large">stereo-large</option>
+                <option value="melody-large">melody-large</option>
+                <option value="large">large</option>
+            </select>
+        </div>
+        <div>
+            <label for="seed" class="block text-sm font-medium text-gray-700 mb-1">Seed (optional)</label>
+            <input type="text" id="seed" name="seed" placeholder="auto"
+                   class="w-full border rounded-md px-3 py-2 text-sm">
+        </div>
+    </div>
+
+    <div>
+        <label for="fadeout_ms" class="block text-sm font-medium text-gray-700 mb-1">Fadeout (ms)</label>
+        <input type="number" id="fadeout_ms" name="fadeout_ms" value="1000" min="0" max="5000"
+               class="w-full border rounded-md px-3 py-2 text-sm">
+    </div>
+
+    <button type="submit"
+            class="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+        Generate
+    </button>
+</form>

@@ -1,0 +1,9 @@
+<div hx-get="/tools/jingle/jobs/{{ job_id }}/status"
+     hx-trigger="every 2s"
+     hx-target="#result-area"
+     hx-swap="innerHTML"
+     class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-300 border-t-blue-600 mb-3"></div>
+    <p class="text-blue-700 font-medium">Generating...</p>
+    <p class="text-blue-500 text-sm mt-1">This may take up to a minute</p>
+</div>

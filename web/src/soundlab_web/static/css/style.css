@@ -1,0 +1,9 @@
+audio {
+    border-radius: 0.5rem;
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
