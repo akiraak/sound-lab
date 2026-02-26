@@ -14,6 +14,7 @@
 - シンプルで読みやすいコードを心がける
 - TODO.mdで完了した項目（`[x]`）はDONE.mdに移動する
 - コミット時に関連するドキュメント（TODO.md, DONE.md, CLAUDE.md, README.md）も併せて更新する
+- サーバ（`soundlab-web`, `uvicorn` など）はClaude Code側から起動しないこと。ユーザーが手動で実行する
 
 ## ドキュメント
 
