@@ -53,7 +53,8 @@ def generate(
     typer.echo(f"Generating jingle with {backend.name}...")
     typer.echo(f"  Prompt: {prompt}")
     typer.echo(f"  Duration: {duration}s")
-    typer.echo(f"  Model: {model_version}")
+    if backend.name == "replicate-musicgen":
+        typer.echo(f"  Model: {model_version}")
 
     try:
         result = backend.generate(request)
@@ -63,6 +64,11 @@ def generate(
             typer.echo(
                 "Error: Replicateのクレジットが不足しています。\n"
                 "  https://replicate.com/account/billing#billing でクレジットを購入してください。",
+                err=True,
+            )
+        elif "401" in error_msg or "Unauthorized" in error_msg or "invalid_api_key" in error_msg:
+            typer.echo(
+                "Error: APIキーが無効です。正しいキーを設定してください。",
                 err=True,
             )
         else:

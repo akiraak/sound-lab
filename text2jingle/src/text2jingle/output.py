@@ -14,23 +14,40 @@ def apply_fadeout(filepath: Path, fadeout_ms: int = 1000) -> None:
     faded.export(filepath, format=filepath.suffix.lstrip("."))
 
 
+def _detect_ext(result: GenerateResult) -> str:
+    """生成結果から出力ファイルの拡張子を判定する"""
+    if result.audio_url and result.audio_url.endswith(".mp3"):
+        return "mp3"
+    fmt = result.metadata.get("output_format", "")
+    if fmt in ("mp3", "wav"):
+        return fmt
+    return "wav"
+
+
 def save_audio(
     result: GenerateResult,
     output_dir: str,
     filename: str | None = None,
     fadeout_ms: int = 1000,
 ) -> Path:
-    """音声URLからファイルをダウンロードして保存する"""
+    """音声URLまたはバイナリデータからファイルを保存する"""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
     if filename is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        ext = "mp3" if result.audio_url.endswith(".mp3") else "wav"
+        ext = _detect_ext(result)
         filename = f"jingle_{timestamp}.{ext}"
 
     filepath = output_path / filename
-    urllib.request.urlretrieve(result.audio_url, filepath)
+
+    if result.audio_data is not None:
+        filepath.write_bytes(result.audio_data)
+    elif result.audio_url:
+        urllib.request.urlretrieve(result.audio_url, filepath)
+    else:
+        raise ValueError("GenerateResult に audio_url も audio_data もありません")
+
     result.audio_path = filepath
 
     if fadeout_ms > 0:

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
+from soundlab_web.routers import jingle
+
 router = APIRouter()
 
 # ツールごとの設定定義
@@ -11,11 +13,26 @@ TOOL_SETTINGS = [
         "description": "テキストプロンプトからAIでジングルを生成",
         "settings": [
             {
+                "key": "TEXT2JINGLE_BACKEND",
+                "label": "Backend",
+                "type": "select",
+                "options": ["replicate-musicgen", "elevenlabs-music"],
+                "default": "replicate-musicgen",
+                "help": "音楽生成に使用するバックエンドを選択。",
+            },
+            {
                 "key": "REPLICATE_API_TOKEN",
                 "label": "Replicate API Token",
                 "type": "password",
                 "placeholder": "r8_xxxxxxxxxxxx",
                 "help": "Replicate APIのトークン。MusicGenバックエンドに必要です。",
+            },
+            {
+                "key": "ELEVENLABS_API_KEY",
+                "label": "ElevenLabs API Key",
+                "type": "password",
+                "placeholder": "xi_xxxxxxxxxxxx",
+                "help": "ElevenLabs APIキー。ElevenLabs Musicバックエンドに必要です。",
             },
         ],
     },
@@ -66,4 +83,5 @@ async def save_settings(request: Request):
             continue
         settings_svc.set(key, str(value))
 
+    jingle.reset_service()
     return RedirectResponse(url="/settings/?saved=1", status_code=303)

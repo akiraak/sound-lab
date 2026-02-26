@@ -14,13 +14,18 @@ from soundlab_web.services.settings_service import SettingsService
 
 def _build_config(settings: SettingsService) -> Config:
     """SettingsServiceからtext2jingle Configを構築する"""
-    token = settings.get("REPLICATE_API_TOKEN", "")
-    if not token:
+    replicate_token = settings.get("REPLICATE_API_TOKEN", "")
+    elevenlabs_key = settings.get("ELEVENLABS_API_KEY", "")
+    backend = settings.get("TEXT2JINGLE_BACKEND", "replicate-musicgen")
+
+    if not replicate_token and not elevenlabs_key:
         # DB に無ければ従来の load_config() にフォールバック
         return load_config()
+
     return Config(
-        replicate_api_token=token,
-        default_backend=settings.get("TEXT2JINGLE_BACKEND", "replicate-musicgen"),
+        replicate_api_token=replicate_token,
+        elevenlabs_api_key=elevenlabs_key,
+        default_backend=backend,
         default_duration=int(settings.get("TEXT2JINGLE_DURATION", "8")),
         default_output_format=settings.get("TEXT2JINGLE_FORMAT", "wav"),
     )

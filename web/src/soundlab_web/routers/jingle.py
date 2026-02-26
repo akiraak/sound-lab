@@ -11,6 +11,12 @@ router = APIRouter()
 _service: JingleService | None = None
 
 
+def reset_service() -> None:
+    """設定変更時にサービスを再初期化する"""
+    global _service
+    _service = None
+
+
 def _get_service(request: Request) -> JingleService:
     global _service
     if _service is None:

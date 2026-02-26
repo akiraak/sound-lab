@@ -17,8 +17,9 @@ class GenerateRequest:
 class GenerateResult:
     """ジングル生成結果"""
 
-    audio_url: str
+    audio_url: str = ""
     audio_path: Path | None = None
     duration: float = 0.0
     backend_name: str = ""
     metadata: dict = field(default_factory=dict)
+    audio_data: bytes | None = None

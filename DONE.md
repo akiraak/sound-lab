@@ -9,6 +9,7 @@
 - [x] バックエンドを差し替え可能な抽象化設計（MusicBackend ABC）
 - [x] プロンプト自動最適化（長さ・終了ヒント付加）
 - [x] フェードアウト処理（pydub、`--fadeout` オプション）
+- [x] ElevenLabs Music対応（ボーカル付き・高品質版、elevenlabs-musicバックエンド）
 
 ## web（統合Web UI）
 
