@@ -3,40 +3,35 @@ from fastapi.responses import RedirectResponse
 
 router = APIRouter()
 
-# 設定キーの定義
-SETTING_KEYS = [
+# ツールごとの設定定義
+TOOL_SETTINGS = [
     {
-        "key": "REPLICATE_API_TOKEN",
-        "label": "Replicate API Token",
-        "type": "password",
-        "placeholder": "r8_xxxxxxxxxxxx",
-        "help": "Replicate APIのトークン。text2jingleのMusicGenバックエンドに必要です。",
+        "tool": "Jingle Generator",
+        "icon": "🎵",
+        "description": "テキストプロンプトからAIでジングルを生成",
+        "settings": [
+            {
+                "key": "REPLICATE_API_TOKEN",
+                "label": "Replicate API Token",
+                "type": "password",
+                "placeholder": "r8_xxxxxxxxxxxx",
+                "help": "Replicate APIのトークン。MusicGenバックエンドに必要です。",
+            },
+        ],
     },
     {
-        "key": "TEXT2JINGLE_BACKEND",
-        "label": "デフォルトバックエンド",
-        "type": "text",
-        "placeholder": "replicate-musicgen",
-        "help": "音楽生成に使用するバックエンド名。",
-        "default": "replicate-musicgen",
-    },
-    {
-        "key": "TEXT2JINGLE_DURATION",
-        "label": "デフォルト生成時間（秒）",
-        "type": "number",
-        "placeholder": "8",
-        "help": "ジングル生成のデフォルト長さ（秒）。",
-        "default": "8",
-    },
-    {
-        "key": "TEXT2JINGLE_FORMAT",
-        "label": "デフォルト出力形式",
-        "type": "select",
-        "options": ["wav", "mp3"],
-        "help": "生成される音声ファイルの形式。",
-        "default": "wav",
+        "tool": "Web Synth",
+        "icon": "🎹",
+        "description": "ブラウザシンセサイザー",
+        "settings": [],
     },
 ]
+
+
+def _all_setting_items():
+    """全ツールの設定項目をフラットに返す"""
+    for group in TOOL_SETTINGS:
+        yield from group["settings"]
 
 
 @router.get("/")
@@ -44,17 +39,15 @@ async def settings_page(request: Request):
     templates = request.app.state.templates
     settings_svc = request.app.state.settings
 
-    # 現在の設定値を読み込み
     current = {}
-    for item in SETTING_KEYS:
-        val = settings_svc.get(item["key"], item.get("default", ""))
-        current[item["key"]] = val
+    for item in _all_setting_items():
+        current[item["key"]] = settings_svc.get(item["key"], item.get("default", ""))
 
     return templates.TemplateResponse(
         "settings/index.html",
         {
             "request": request,
-            "setting_keys": SETTING_KEYS,
+            "tool_settings": TOOL_SETTINGS,
             "current": current,
             "saved": request.query_params.get("saved") == "1",
         },
@@ -66,10 +59,9 @@ async def save_settings(request: Request):
     settings_svc = request.app.state.settings
     form = await request.form()
 
-    for item in SETTING_KEYS:
+    for item in _all_setting_items():
         key = item["key"]
         value = form.get(key, "")
-        # パスワード欄が空の場合は既存値を維持
         if item["type"] == "password" and value == "":
             continue
         settings_svc.set(key, str(value))
